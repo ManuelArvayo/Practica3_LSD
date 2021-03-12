@@ -14,12 +14,13 @@ J,K: in  std_logic;
 end JK_FF;
  
 architecture Behavioral of JK_FF is
-   signal temp: std_logic;
+   signal temp: std_logic:='0';
 begin
-   process (Clock) 
+   process (Clock, Reset) 
    begin
-	    if Reset = ‘1’ then
-		  temp <= ‘0’;
+	    if Reset = '1' then
+		  temp <= '0';
+	end if;
       if rising_edge(Clock) then                
           if Clock_enable ='1' then
             if (J='0' and K='0') then
@@ -34,5 +35,5 @@ begin
          end if;
       end if;
    end process;
-   Output <= tem
+   Output <= temp;
 end Behavioral;
