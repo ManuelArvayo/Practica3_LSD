@@ -6,14 +6,14 @@ use IEEE.std_logic_arith.all;		-- add to do arithmetic operations
 
 entity sSegDisplay is
     Port(ck : in  std_logic;                          -- 100MHz system clock
-			number : in  std_logic_vector (63 downto 0); -- eight digit number to be displayed
+			number : in  std_logic_vector (31 downto 0); -- eight digit number to be displayed
 			seg : out  std_logic_vector (7 downto 0);    -- display cathodes
 			an : out  std_logic_vector (7 downto 0));    -- display anodes (active-low, due to transistor complementing)
 end sSegDisplay;
 
 architecture Behavioral of sSegDisplay is
 
-	signal cnt: std_logic_vector(19 downto 0); -- divider counter for ~95.3Hz refresh rate (with 100MHz main clock)
+	signal cnt: std_logic_vector(19 downto 0):=x"00000"; -- divider counter for ~95.3Hz refresh rate (with 100MHz main clock)
 	signal hex: std_logic_vector(7 downto 0);  -- hexadecimal digit
 	signal intAn: std_logic_vector(7 downto 0); -- internal signal representing anode data
 
@@ -49,9 +49,9 @@ begin
          number(15 downto 8)  when "001",
          number(23 downto 16) when "010",
          number(31 downto 24) when "011",
-         number(39 downto 32) when "100",
-         number(47 downto 40) when "101",
-         number(55 downto 48) when "110",
-         number(63 downto 56) when others;
+         x"ff" when "100", -- 1111
+         x"ff" when "101",
+         x"ff" when "110",
+         x"ff" when others;
 
 end Behavioral;
