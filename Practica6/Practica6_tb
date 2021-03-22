@@ -1,0 +1,77 @@
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+use IEEE.std_logic_unsigned.all;	-- add to do arithmetic operations
+use IEEE.std_logic_arith.all;		-- add to do arithmetic
+
+entity tb_practica6 is
+-- Port ( );
+end tb_practica6;
+  
+-- Conexión del testbench al diseño deseado.
+architecture Behavioral of tb_practica6 is
+component calculadora is
+Port ( clock : in STD_LOGIC;
+A : in STD_LOGIC_VECTOR(3 downto 0);
+B : in STD_LOGIC_VECTOR(3 downto 0);
+OPselect : in STD_LOGIC_VECTOR(1 downto 0);
+salida : out STD_LOGIC_VECTOR(3 downto 0);
+DispEnable : out STD_LOGIC_VECTOR(7 downto 0);
+OpIndicator : out STD_LOGIC_VECTOR(1 downto 0);
+end component;
+       
+-- Creación de señales de estimulación y monitoreo
+signal clock_s : in STD_LOGIC;
+signal A_s : in STD_LOGIC_VECTOR(3 downto 0);
+signal B_s : in STD_LOGIC_VECTOR(3 downto 0);
+signal OPselect_s : in STD_LOGIC_VECTOR(1 downto 0);
+signal salida_s : out STD_LOGIC_VECTOR(3 downto 0);
+signal DispEnable_s : out STD_LOGIC_VECTOR(7 downto 0);
+signal OpIndicator_s : out STD_LOGIC_VECTOR(1 downto 0);
+   
+-- Mapeo de entradas y salidas a señales del testbench
+DUT: calculadora port map(
+ clock => clock_s,
+ A => A_s,
+ B => B_s,
+ OPselect => OPselect_s,
+ salida => salida_s,
+ DispEnable => DispEnable_s,
+ OpIndicator => OpIndicator_s);
+      
+-- Estimulación de entradas mediante señales de testbench
+-- 5 + 3	, 9 - 4	, 5 × 3	, -8 + -5	, 6 × -2  
+process
+begin  
+
+A_s <= '5';
+B_s <= '3';
+OPselest_s <= '1';
+
+wait for 10 ns;
+      
+A_s <= '9';
+B_s <= '4';
+OPselest_s <= '2';
+  
+wait for 10 ns;
+      
+A_s <= '5';
+B_s <= '3';
+OPselest_s <= '3';
+      
+wait for 10 ns;
+      
+A_s <= '-8';
+B_s <= '-5';
+OPselest_s <= '1';
+      
+wait for 10 ns;
+      
+A_s <= '6';
+B_s <= '-2';
+OPselest_s <= '3';
+  
+wait;
+end process;
+end Behavioral;
