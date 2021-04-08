@@ -20,7 +20,7 @@ port(
 		res: out std_logic_vector (3 downto 0);
 		resultado_signo: out std_logic
 	);
-end operaciones;
+end component;
        
 -- Creación de señales de estimulación y monitoreo
 signal sa_in: std_logic_vector (3 downto 0);
