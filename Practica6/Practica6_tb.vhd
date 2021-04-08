@@ -48,8 +48,8 @@ resultado_signo=>sresultado_signo
 process
 begin  
 
-sa_in <= '5';
-sb_in <= '3';
+sa_in <= x"5";
+sb_in <= x"3";
 sop <= '1';
 
 wait for 10 ns;
