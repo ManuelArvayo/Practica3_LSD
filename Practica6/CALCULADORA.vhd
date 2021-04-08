@@ -33,20 +33,30 @@ component KEYBOARD is
          );
 end component;
 
+component sSegDisplay is
+    Port(		ck : in  std_logic;                          -- 100MHz system clock
+			number : in  std_logic_vector (63 downto 0); -- eight digit number to be displayed
+			seg : out  std_logic_vector (7 downto 0);    -- display cathodes
+			an : out  std_logic_vector (7 downto 0));    -- display anodes (active-low, due to transistor complementing)
+end component;
+
 signal number,A, B, RES: std_logic_vector (3 downto 0);
 signal signoA, signoB, signoRes: std_logic:='0';
 signal operacion, oper: std_logic_vector(1 downto 0);
 
 signal not_number, ready: std_logic;
 signal KB: std_logic_vector(15 downto 0):=x"0000";
-signal KB_bit: bit_vector (15 downto 0);
 signal I: integer:=0;
+
+signal num7seg : std_logic_vector(63 downto 0) := x"00000000";
+
 
 begin
 
 k: KEYBOARD port map( row => fila, column => columna, KEY => KB);
 op: operaciones port map ( a_in => A, b_in => B, op => oper, a_signo => signoA, b_signo => signoB, res => resultado, resultado_signo => signo_R);
-KB_bit<= to_bitvector (KB);
+sSd: sSegDisplay port map ( ck => CLK, number => , seg=> , an =>);
+
 process(CLK)
 begin
 case KB is
@@ -80,6 +90,22 @@ case KB is
 			null;
 
 	end case;
+
+
+case signoA is
+	when "0" =>
+		num7seg(63 downto 56) <= "11111111";
+	when "1" =>
+		num7seg(63 downto 56) <= "10111111";
+end case;
+
+case signoB is
+	when "0" =>
+		num7seg(63 downto 56) <= "11111111";
+	when "1" =>
+		num7seg(63 downto 56) <= "10111111";
+end case;
+
 
 if rising_edge (CLK) then
 	if KB=x"1000" or KB=x"0100" or KB=x"0010" or KB=x"0008" or KB=x"0002" or KB=x"0001" then
@@ -118,9 +144,11 @@ if rising_edge (CLK) then
 	end if; 
 		if I=5 and KB=x"0001" then
 		ready<='1';
-	else
+		else
 		ready<='0';	
 	end if;
+
+	
 
 	
 	

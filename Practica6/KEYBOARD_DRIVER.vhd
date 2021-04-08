@@ -4,7 +4,8 @@ use IEEE.STD_LOGIC_1164.ALL;
 entity KEYBOARD is
     Port ( row : in  STD_LOGIC_VECTOR (3 downto 0);
            column : in  STD_LOGIC_VECTOR (3 downto 0);
-           KEY : out  STD_LOGIC_VECTOR (15 downto 0)
+           KEY : out  STD_LOGIC_VECTOR (15 downto 0);
+		sSD: out std_logic_vector (
          );
 end KEYBOARD;
 
