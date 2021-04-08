@@ -50,31 +50,31 @@ begin
 
 sa_in <= x"5";
 sb_in <= x"3";
-sop <= '1';
+sop <= x"1";
 
 wait for 10 ns;
 
-sa_in <= '9';
-sb_in <= '4';
-sop <= '2';
+sa_in <= x"9";
+sb_in <= x"4";
+sop <= x"2";
   
 wait for 10 ns;
 
-sa_in <= '5';
-sb_in <= '3';
-sop <= '3';    
+sa_in <= x"5";
+sb_in <= x"3";
+sop <= x"3";    
       
 wait for 10 ns;
 
-sa_in <= '-8';
-sb_in <= '-5';
-sop <= '1';
+sa_in <= x"-8";
+sb_in <= x"-5";
+sop <= x"1";
       
 wait for 10 ns;
 
-sa_in <= '6';
-sb_in <= '-2';
-sop <= '3';
+sa_in <= x"6";
+sb_in <= x"-2";
+sop <= x"3";
   
 wait;
 end process;
