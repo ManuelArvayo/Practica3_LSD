@@ -15,6 +15,7 @@ architecture Behavorial of ContadorUD is
    Port ( PE,UD,CEP,CET,CP : in std_logic;
         P : in std_logic_vector(3 downto 0);
         Q : out std_logic_vector(3 downto 0);
+        num7seg : out std_logic_vector(15 downto 0);
         TC : out std_logic
       );
   end component;
@@ -81,4 +82,34 @@ process (Uniaux,Decaux,aux1,UD)
     else TC1 <='0';
  end if;
 end process;
+    
+case (Uni1) is
+    when "0000" => num7seg (7 downto 0) <= "11000000"; -- 
+    when "0001" => num7seg (7 downto 0) <= "11111001"; --
+    when "0010" => num7seg (7 downto 0) <= "10100100"; -- 
+    when "0011" => num7seg (7 downto 0) <= "10110000"; -- 
+    when "0100" => num7seg (7 downto 0) <= "10011001"; --
+    when "0101" => num7seg (7 downto 0) <= "10010010"; --
+    when "0110" => num7seg (7 downto 0) <= "10000010"; --
+    when "0111" => num7seg (7 downto 0) <= "11111000"; --
+    when "1000" => num7seg (7 downto 0) <= "10000000"; --
+    when "1001" => num7seg (7 downto 0) <= "10010000"; -- 
+    when others => num7seg (7 downto 0) <= "11000000"; --
+end case;
+
+case (Dec1) is
+    when "0000" => num7seg (15 downto 8) <= "11000000";
+    when "0001" => num7seg (15 downto 8) <= "11111001";
+    when "0010" => num7seg (15 downto 8) <= "10100100";
+    when "0011" => num7seg (15 downto 8) <= "10110000";
+    when "0100" => num7seg (15 downto 8) <= "10011001";
+    when "0101" => num7seg (15 downto 8) <= "10010010";
+    when "0110" => num7seg (15 downto 8) <= "10000010";
+    when "0111" => num7seg (15 downto 8) <= "11111000";
+    when "1000" => num7seg (15 downto 8) <= "10000000";
+    when "1001" => num7seg (15 downto 8) <= "10010000";
+    when others => num7seg (15 downto 8) <= "11111111";
+end case;
+
+    
 end Behavorial;
