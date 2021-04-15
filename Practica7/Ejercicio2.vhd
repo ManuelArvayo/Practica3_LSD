@@ -6,7 +6,7 @@ entity ContadorUD is
         Dec : in std_logic_vector(3 downto 0);
         Uni : in std_logic_vector(3 downto 0);
         Dec1 : out std_logic_vector(3 downto 0);
-        Uni1 : out std_logic_vector(3 downto 0);
+        Uni1 : out std_logic_vector(3 downto 0)
       );
 end ContadorUD;
   
@@ -19,20 +19,20 @@ architecture Behavorial of ContadorUD is
       );
   end component;
   
-signal TC : std_logic;
+signal TC : std_logic:='0';
 signal TC1 : std_logic;
 signal PE : std_logic:='0';
-signal TC2 : std_logic;
+signal TC2 : std_logic:='0';
 signal Uniaux : std_logic_vector(3 downto 0);
 signal Decaux : std_logic_vector(3 downto 0);
 signal PE1 : std_logic:='0';
 signal aux1 : std_logic;
 signal res : std_logic_vector(3 downto 0);
-signal ant : std_logic_vector(3 downto 0);
+signal ant : std_logic_vector(3 downto 0):="0000";
 
 begin
   
-aux1 <= not PE:
+aux1 <= not PE;
 Dec1 <= Decaux;
 Uni1 <= Uniaux;
 
