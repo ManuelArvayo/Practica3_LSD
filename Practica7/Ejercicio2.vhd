@@ -97,9 +97,8 @@ process (Uniaux,Decaux,aux1,UD)
     end if;
   end if;
     
- if(aux1='0' and aux1 'event and ant = "1000") then
+ if((aux1='0' and aux1'event) and ant = "1000") then
     TC1 <='1';
-    else TC1 <='0';
  end if;
 
     
