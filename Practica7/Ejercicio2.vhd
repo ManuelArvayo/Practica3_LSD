@@ -7,7 +7,6 @@ entity ContadorUD is
         Uni : in std_logic_vector(3 downto 0);
         Dec1 : out std_logic_vector(3 downto 0);
         Uni1 : out std_logic_vector(3 downto 0);
-        num7seg: out std_logic_vector(15 downto 0);
         seg7seg, an7seg: out std_logic_vector (7 downto 0)
       );
 end ContadorUD;
@@ -17,16 +16,15 @@ architecture Behavorial of ContadorUD is
    Port ( PE,UD,CEP,CET,CP : in std_logic;
         P : in std_logic_vector(3 downto 0);
         Q : out std_logic_vector(3 downto 0);
-        num7seg : out std_logic_vector(15 downto 0);
         TC : out std_logic
       );
   end component;
  
  component sSegDisplay is
     Port(ck : in  std_logic;                          -- 100MHz system clock
-			      number : in  std_logic_vector (31 downto 0); -- eight digit number to be displayed
-			      seg : out  std_logic_vector (7 downto 0);    -- display cathodes
-			      an : out  std_logic_vector (7 downto 0));    -- display anodes (active-low, due to transistor complementing)
+	 number : in  std_logic_vector (15 downto 0); -- eight digit number to be displayed
+	 seg : out  std_logic_vector (7 downto 0);    -- display cathodes
+	 an : out  std_logic_vector (7 downto 0));    -- display anodes (active-low, due to transistor complementing)
 end component;
   
 signal TC : std_logic:='0';
@@ -41,6 +39,7 @@ signal res : std_logic_vector(3 downto 0);
 signal ant : std_logic_vector(3 downto 0):="0000";
 signal cont: integer range 0 to 24999999 := 0;
 signal clk_div: std_logic:='0';
+signal num7seg: std_logic_vector(15 downto 0);
 
 begin
   
@@ -49,9 +48,9 @@ Dec1 <= Decaux;
 Uni1 <= Uniaux;
 
 C1 : Contador
-  port map (PE,UD,CEP,CET,clk_div,res,Uniaux,TC);
+  port map (PE=>PE,UD=>UD,CEP=>CEP,CET=>CET,CP=>clk_div,P=>res,Q=>Uniaux,TC=>TC);
 C2 : Contador
-  port map (PE1,UD,CEP,CET,TC1,res,Decaux,TC2);
+  port map (PE=>PE1,UD=>UD,CEP=>CEP,CET=>CET,CP=>TC1,P=>res,Q=>Decaux,TC=>TC2);
   
 process (Uniaux,Decaux,aux1,UD)
   begin
