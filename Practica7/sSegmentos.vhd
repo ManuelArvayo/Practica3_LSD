@@ -6,7 +6,7 @@ use IEEE.std_logic_arith.all;		-- add to do arithmetic operations
 
 entity sSegDisplay is
     Port(ck : in  std_logic;                          -- 100MHz system clock
-			number : in  std_logic_vector (31 downto 0); -- eight digit number to be displayed
+			number : in  std_logic_vector (15 downto 0); -- eight digit number to be displayed
 			seg : out  std_logic_vector (7 downto 0);    -- display cathodes
 			an : out  std_logic_vector (7 downto 0));    -- display anodes (active-low, due to transistor complementing)
 end sSegDisplay;
@@ -47,8 +47,8 @@ begin
       hex <=      
          number(7 downto 0)   when "000",
          number(15 downto 8)  when "001",
-         number(23 downto 16) when "010",
-         number(31 downto 24) when "011",
+         x"ff" when "010",
+         x"ff" when "011",
          x"ff" when "100", -- 1111
          x"ff" when "101",
          x"ff" when "110",
