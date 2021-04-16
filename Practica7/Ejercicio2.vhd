@@ -6,7 +6,9 @@ entity ContadorUD is
         Dec : in std_logic_vector(3 downto 0);
         Uni : in std_logic_vector(3 downto 0);
         Dec1 : out std_logic_vector(3 downto 0);
-        Uni1 : out std_logic_vector(3 downto 0)
+        Uni1 : out std_logic_vector(3 downto 0);
+        num7seg: out std_logic_vector(15 downto 0);
+        seg7seg, an7seg: out std_logic_vector (7 downto 0)
       );
 end ContadorUD;
   
@@ -19,6 +21,13 @@ architecture Behavorial of ContadorUD is
         TC : out std_logic
       );
   end component;
+ 
+ component sSegDisplay is
+    Port(ck : in  std_logic;                          -- 100MHz system clock
+			      number : in  std_logic_vector (31 downto 0); -- eight digit number to be displayed
+			      seg : out  std_logic_vector (7 downto 0);    -- display cathodes
+			      an : out  std_logic_vector (7 downto 0));    -- display anodes (active-low, due to transistor complementing)
+end component;
   
 signal TC : std_logic:='0';
 signal TC1 : std_logic;
@@ -30,6 +39,8 @@ signal PE1 : std_logic:='0';
 signal aux1 : std_logic;
 signal res : std_logic_vector(3 downto 0);
 signal ant : std_logic_vector(3 downto 0):="0000";
+signal cont: integer range 0 to 24999999 := 0;
+signal clk_div: std_logic:='0';
 
 begin
   
@@ -38,12 +49,22 @@ Dec1 <= Decaux;
 Uni1 <= Uniaux;
 
 C1 : Contador
-  port map (PE,UD,CEP,CET,CP,res,Uniaux,TC);
+  port map (PE,UD,CEP,CET,clk_div,res,Uniaux,TC);
 C2 : Contador
   port map (PE1,UD,CEP,CET,TC1,res,Decaux,TC2);
   
 process (Uniaux,Decaux,aux1,UD)
   begin
+   
+   if rising_edge(CP) then
+            if (cont = 24999999) then
+                clk_div <= NOT(clk_div);
+                cont <= 0;
+            else
+                cont <= cont+1;
+            end if;
+        end if;
+   
    if(UD='1') then
      res <= "0000";
       if(Uniaux="1001") then
@@ -81,9 +102,9 @@ process (Uniaux,Decaux,aux1,UD)
     TC1 <='1';
     else TC1 <='0';
  end if;
-end process;
+
     
-case (Uni1) is
+case (Uniaux) is
     when "0000" => num7seg (7 downto 0) <= "11000000"; -- 
     when "0001" => num7seg (7 downto 0) <= "11111001"; --
     when "0010" => num7seg (7 downto 0) <= "10100100"; -- 
@@ -97,7 +118,7 @@ case (Uni1) is
     when others => num7seg (7 downto 0) <= "11000000"; --
 end case;
 
-case (Dec1) is
+case (Decaux) is
     when "0000" => num7seg (15 downto 8) <= "11000000";
     when "0001" => num7seg (15 downto 8) <= "11111001";
     when "0010" => num7seg (15 downto 8) <= "10100100";
@@ -110,6 +131,8 @@ case (Dec1) is
     when "1001" => num7seg (15 downto 8) <= "10010000";
     when others => num7seg (15 downto 8) <= "11111111";
 end case;
+end process;
 
+d7s: sSegDisplay port map ( ck => CP, number => num7seg,seg => seg7seg, an => an7seg);
     
 end Behavorial;
