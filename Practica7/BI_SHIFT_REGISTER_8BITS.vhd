@@ -26,14 +26,28 @@ component BI_Shift_Register_4bits is
 
 	);
 end component;
-signal QA_temp, QB_temp, QC_temp, QD_temp, QE_temp, QF_temp, QG_temp, QH_temp: std_logic;
+signal QA_temp, QB_temp, QC_temp, QD_temp, QE_temp, QF_temp, QG_temp, QH_temp, clk_div: std_logic:='0';
+signal contador: integer range 0 to 24999999 := 0;
+
 begin
 
+divisor_frecuencia: process (CLK_in) begin
+        if rising_edge(CLK_in) then
+            if (contador = 24999999) then
+                clk_div <= NOT(clk_div);
+                contador <= 0;
+            else
+                contador <= contador+1;
+            end if;
+        end if;
+    end process;
+
+
 ShiftR1: BI_Shift_Register_4bits port map 
-(A => A_in, B=> B_in, C=>C_in, D=>D_in, Clear=>Clear_in, S0=>S0_in, S1=>S1_in, CLK=>CLK_in, SL=>QA_temp, SR=>SR_in, QA=>QA_temp, QB=>QB_temp, QC=>QC_temp, QD=>QD_temp);
+(A => A_in, B=> B_in, C=>C_in, D=>D_in, Clear=>Clear_in, S0=>S0_in, S1=>S1_in, CLK=>clk_div, SL=>QA_temp, SR=>SR_in, QA=>QA_temp, QB=>QB_temp, QC=>QC_temp, QD=>QD_temp);
 
 ShiftR2: BI_Shift_Register_4bits port map 
-(A => E_in, B=> F_in, C=>G_in, D=>H_in, Clear=>Clear_in, S0=>S0_in, S1=>S1_in, CLK=>CLK_in, SL=>SL_in, SR=>QD_temp, QA=>QE_temp, QB=>QF_temp, QC=>QG_temp, QD=>QH_temp);
+(A => E_in, B=> F_in, C=>G_in, D=>H_in, Clear=>Clear_in, S0=>S0_in, S1=>S1_in, CLK=>clk_div, SL=>SL_in, SR=>QD_temp, QA=>QE_temp, QB=>QF_temp, QC=>QG_temp, QD=>QH_temp);
 
 QA<= QA_temp;
 QB<= QB_temp;
