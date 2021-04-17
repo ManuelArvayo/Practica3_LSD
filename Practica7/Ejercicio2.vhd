@@ -5,8 +5,8 @@ entity ContadorUD is
  Port ( UD,CEP,CET,CP : in std_logic;
         Dec : in std_logic_vector(3 downto 0);
         Uni : in std_logic_vector(3 downto 0);
-        Dec1 : out std_logic_vector(3 downto 0);
-        Uni1 : out std_logic_vector(3 downto 0);
+        Dec1 : out std_logic_vector(3 downto 0); -- Innecesaria
+        Uni1 : out std_logic_vector(3 downto 0); -- Innecesaria
         seg7seg, an7seg: out std_logic_vector (7 downto 0)
       );
 end ContadorUD;
@@ -27,16 +27,14 @@ architecture Behavorial of ContadorUD is
 	 an : out  std_logic_vector (7 downto 0));    -- display anodes (active-low, due to transistor complementing)
 end component;
   
-signal TC : std_logic:='0';
-signal TC1 : std_logic;
+signal sTC : std_logic:='0'; --Cambie nombre , TC del FF 1
+signal TC1 : std_logic; --TC del FF 2
 signal PE : std_logic:='0';
-signal TC2 : std_logic:='0';
 signal Uniaux : std_logic_vector(3 downto 0);
 signal Decaux : std_logic_vector(3 downto 0);
-signal PE1 : std_logic:='0';
+signal PE1 : std_logic:='0'; --PE FF 2
 signal aux1 : std_logic;
 signal res : std_logic_vector(3 downto 0);
-signal ant : std_logic_vector(3 downto 0):="0000";
 signal cont: integer range 0 to 24999999 := 0;
 signal clk_div: std_logic:='0';
 signal num7seg: std_logic_vector(15 downto 0);
@@ -50,7 +48,7 @@ Uni1 <= Uniaux;
 C1 : Contador
   port map (PE=>PE,UD=>UD,CEP=>CEP,CET=>CET,CP=>clk_div,P=>res,Q=>Uniaux,TC=>TC);
 C2 : Contador
-  port map (PE=>PE1,UD=>UD,CEP=>CEP,CET=>CET,CP=>TC1,P=>res,Q=>Decaux,TC=>TC2);
+  port map (PE=>PE1,UD=>UD,CEP=>CEP,CET=>CET,CP=>TC,P=>res,Q=>Decaux,TC=>TC1); --Es TC1
   
 process (Uniaux,Decaux,aux1,UD)
   begin
@@ -67,14 +65,10 @@ process (Uniaux,Decaux,aux1,UD)
    if(UD='1') then
      res <= "0000";
       if(Uniaux="1001") then
-        PE <='0';
-      elsif(Uniaux="0001") then
-        ant <= "1000";
-        PE <= '1';
-      else
-        PE <= '1';
+        PE <='1';
   end if;
-    if (Decaux="1001") then
+	  
+   if (Decaux="1001") then
       PE1 <= '0';
     else
       PE1 <= '1';
@@ -85,20 +79,22 @@ process (Uniaux,Decaux,aux1,UD)
       if(Uniaux="0000") then
         PE <='0';
       elsif(Uniaux="0001") then
-        ant <= "1000";
-        PE <= '1';
-      else
         PE <= '1';
       end if;
-     if (Decaux="0000") then
+	      
+   if (Decaux="0000") then
       PE1 <= '0';
     else
       PE1 <= '1';
     end if;
   end if;
+	  
+ if (PE1='0')then
+    TC1<='0';
+ end if;
     
- if((aux1='0' and aux1'event) and ant = "1000") then
-    TC1 <='1';
+ if(aux1='0') then
+    TC <='0';
  end if;
 
     
