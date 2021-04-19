@@ -43,7 +43,26 @@ begin
 			if (Run = '1') then
 				nextState <= S90;
 			else
-				nextState <= S1;
+				nextState <= S0;
+			end if;
+		when S90 =>
+		duty_cycle <= 100_000;
+			if (Run = '1') then
+				nextState <= S135;
+			else
+				nextState <= S0;
+			end if;
+		when S135 =>
+		duty_cycle <= 100_000;
+			if (Run = '1') then
+				nextState <= S180;
+			else
+				nextState <= S0;
+			end if;
+		when S180 =>
+		duty_cycle <= 100_000;
+			if (Run = '1') then
+				nextState <= S0;
 			end if;
 		when others =>
 			Result <= '0';
