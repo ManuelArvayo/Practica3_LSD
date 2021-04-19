@@ -2,23 +2,22 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 
 entity ContadorUD is
- Port ( UD,CEP,CET,CP : in std_logic;
-        Dec : in std_logic_vector(3 downto 0);
-        Uni : in std_logic_vector(3 downto 0);
-        Dec1 : out std_logic_vector(3 downto 0); -- Innecesaria
-        Uni1 : out std_logic_vector(3 downto 0); -- Innecesaria
+ Port ( Up_Down,CEP,CET : in std_logic;
+        clk: in std_logic;
         seg7seg, an7seg: out std_logic_vector (7 downto 0)
       );
 end ContadorUD;
+
+architecture behavioral of ContadorUD is
   
-architecture Behavorial of ContadorUD is
-  component Contador is
-   Port ( PE,UD,CEP,CET,CP : in std_logic;
-        P : in std_logic_vector(3 downto 0);
+component Contador is
+ Port ( Par_En, 	
+	Up_Dn,CE_Par,CE_Trick,clk : in std_logic;
+        Par_in : in std_logic_vector(3 downto 0);
         Q : out std_logic_vector(3 downto 0);
-        TC : out std_logic
+        Terminal_C : out std_logic
       );
-  end component;
+end component;
  
  component sSegDisplay is
     Port(ck : in  std_logic;                          -- 100MHz system clock
@@ -27,78 +26,102 @@ architecture Behavorial of ContadorUD is
 	 an : out  std_logic_vector (7 downto 0));    -- display anodes (active-low, due to transistor complementing)
 end component;
   
-signal sTC : std_logic:='0'; --Cambie nombre , TC del FF 1
-signal TC1 : std_logic; --TC del FF 2
-signal PE : std_logic:='0';
-signal Uniaux : std_logic_vector(3 downto 0);
-signal Decaux : std_logic_vector(3 downto 0);
-signal PE1 : std_logic:='0'; --PE FF 2
-signal aux1 : std_logic;
-signal res : std_logic_vector(3 downto 0);
+signal TC_unidades_aux: std_logic:='0';
+signal PE_unidades_aux: std_logic:='0';
+signal TC_decenas_aux: std_logic:='0';
+signal PE_decenas_aux : std_logic:='0';
+
+signal Uni_aux : std_logic_vector(3 downto 0);
+signal Dec_aux : std_logic_vector(3 downto 0);
+
+signal paralela : std_logic_vector(3 downto 0);
 signal cont: integer range 0 to 24999999 := 0;
 signal clk_div: std_logic:='0';
 signal num7seg: std_logic_vector(15 downto 0);
+signal clk_dec: std_logic:='1';
 
 begin
   
-aux1 <= not PE;
-Dec1 <= Decaux;
-Uni1 <= Uniaux;
+--aux1 <= not PE;
 
-C1 : Contador
-  port map (PE=>PE,UD=>UD,CEP=>CEP,CET=>CET,CP=>clk_div,P=>res,Q=>Uniaux,TC=>TC);
-C2 : Contador
-  port map (PE=>PE1,UD=>UD,CEP=>CEP,CET=>CET,CP=>TC,P=>res,Q=>Decaux,TC=>TC1); --Es TC1
-  
-process (Uniaux,Decaux,aux1,UD)
-  begin
-   
-   if rising_edge(CP) then
-            if (cont = 24999999) then
-                clk_div <= NOT(clk_div);
-                cont <= 0;
-            else
-                cont <= cont+1;
-            end if;
+C_unidades : Contador port map( 
+	Par_En 		=> PE_unidades_aux,
+	Up_Dn 		=> Up_Down,
+	CE_Par 		=> CEP,
+	CE_Trick 	=> CET,
+	clk 		=> clk_div,
+        Par_in		=> paralela,
+        Q 		=> Uni_aux,
+        Terminal_C 	=> TC_unidades_aux
+      );
+
+C_decenas : Contador port map( 
+	Par_En 		=> PE_decenas_aux,
+	Up_Dn 		=> Up_Down,
+	CE_Par 		=> CEP,
+	CE_Trick 	=> CET,
+	clk 		=> clk_dec,
+        Par_in		=> paralela,
+        Q 		=> Dec_aux,
+        Terminal_C 	=> TC_decenas_aux
+      );
+
+process (clk,Uni_aux,Dec_aux,Up_Down,TC_unidades_aux,TC_decenas_aux)
+begin
+	if(Up_Down='1') then
+        if(Uni_aux="0000" and TC_unidades_aux='1') then
+  	         clk_dec <='1';
+  	    else 
+  	         clk_dec <='0';
+  	    end if;
+  	
+    else
+        if (Uni_aux="1001" and TC_unidades_aux='1') then
+            clk_dec <='1';
+  	     else 
+  	         clk_dec <='0';
+  	     end if;
+  	end if;
+  	
+  	
+	if rising_edge(clk) then  
+		if (cont = 24999999) then
+                	clk_div <= NOT(clk_div);
+                	cont <= 0;
+            	else
+                	cont <= cont+1;
+            	end if;
         end if;
    
-   if(UD='1') then
-     res <= "0000";
-      if(Uniaux="1001") then
-        PE <='1';
-  end if;
-	  
-   if (Decaux="1001") then
-      PE1 <= '0';
-    else
-      PE1 <= '1';
-    end if;
-      
-  elsif (UD='0') then
-    res <= "1001";
-      if(Uniaux="0000") then
-        PE <='0';
-      elsif(Uniaux="0001") then
-        PE <= '1';
-      end if;
-	      
-   if (Decaux="0000") then
-      PE1 <= '0';
-    else
-      PE1 <= '1';
-    end if;
-  end if;
-	  
- if (PE1='0')then
-    TC1<='0';
- end if;
-    
- if(aux1='0') then
-    TC <='0';
- end if;
+	if(Up_Down ='1') then
+    		paralela <= "0000";
+     		if(TC_unidades_aux='0') then
+        		PE_unidades_aux <='0';
+      			if(TC_decenas_aux='0') then
+				PE_decenas_aux <='0';
+			else
+				PE_decenas_aux <='1';
+			end if;
+      		else
+        		PE_unidades_aux <= '1';
+		end if;
 
+  	else
+    		paralela <= "1001";
+      		if(TC_unidades_aux ='0') then
+        		PE_unidades_aux <='0';
+      			if(TC_decenas_aux ='0') then
+				PE_decenas_aux <='0';
+			else
+				PE_decenas_aux <='1';
+			end if;
+     		else
+        		PE_unidades_aux <= '1';
+     		end if;
+  	end if;
+  
     
-case (Uniaux) is
+case (Uni_aux) is
     when "0000" => num7seg (7 downto 0) <= "11000000"; -- 
     when "0001" => num7seg (7 downto 0) <= "11111001"; --
     when "0010" => num7seg (7 downto 0) <= "10100100"; -- 
@@ -112,7 +135,7 @@ case (Uniaux) is
     when others => num7seg (7 downto 0) <= "11000000"; --
 end case;
 
-case (Decaux) is
+case (Dec_aux) is
     when "0000" => num7seg (15 downto 8) <= "11000000";
     when "0001" => num7seg (15 downto 8) <= "11111001";
     when "0010" => num7seg (15 downto 8) <= "10100100";
@@ -127,6 +150,6 @@ case (Decaux) is
 end case;
 end process;
 
-d7s: sSegDisplay port map ( ck => CP, number => num7seg,seg => seg7seg, an => an7seg);
+d7s: sSegDisplay port map ( ck => clk, number => num7seg,seg => seg7seg, an => an7seg);
     
-end Behavorial;
+end behavioral;
