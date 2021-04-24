@@ -30,12 +30,12 @@ BEGIN
              busy => lcd_busy, rw => rw, rs => rs, e => e, lcd_data => lcd_data);
   
   PROCESS(clk)
-    VARIABLE char  :  INTEGER RANGE 0 TO 7 := 0;
+    VARIABLE char  :  INTEGER:= 0;
   BEGIN
     IF(clk'EVENT AND clk = '1') THEN
       IF(lcd_busy = '0' AND lcd_enable = '0') THEN
         lcd_enable <= '1';
-        IF(char < 10) THEN
+        IF(char < 15) THEN
           char := char + 1;
         END IF;
         CASE char IS
@@ -45,6 +45,14 @@ BEGIN
           WHEN 4 => lcd_bus <= "1001110101"; -- u
           WHEN 5 => lcd_bus <= "1001100101"; -- e
           WHEN 6 => lcd_bus <= "1001101100"; -- l
+          WHEN 7 => lcd_bus <= "0011000000"; -- salto de linea
+          WHEN 8 => lcd_bus <= "1001001010";  -- J
+          WHEN 9 => lcd_bus <= "1001100101";  -- e
+          WHEN 10 => lcd_bus<= "1001110011";  -- s
+          WHEN 11 => lcd_bus <= "1001110011"; -- s
+          WHEN 12 => lcd_bus <= "1001101001"; -- i
+          WHEN 13 => lcd_bus <= "1001100011"; -- c
+          WHEN 14 => lcd_bus <= "1001100001";  -- a
           WHEN OTHERS => lcd_enable <= '0';
         END CASE;
       ELSE
