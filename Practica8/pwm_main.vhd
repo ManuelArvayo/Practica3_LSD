@@ -67,20 +67,17 @@ s7D: sSegDisplay port map (ck => clk100m, number => num7seg, seg => SEGM, an => 
 syncProcess: process(btn_in, Clk100m)
 variable cur : u20 := counter;
 	begin
-		if (btn_in = '1') then 
-			currentState <= S0;
-		elsif (rising_edge(Clk100m)) then
+		if (rising_edge(Clk100m)) then
 			currentState <= nextState;
 			cur := cur + 1;  
             counter <= cur;
-        if (cur <= duty_cycle) then
-            pwm_counter <= '1'; 
-        elsif (cur > duty_cycle) then
-            pwm_counter <= '0';
-        elsif (cur = period) then
-            cur := x"00000";
-        end if;  
-
+            if (cur <= duty_cycle) then
+                 pwm_counter <= '1'; 
+            elsif (cur > duty_cycle) then
+                 pwm_counter <= '0';
+            elsif (cur = period) then
+                 cur := x"00000";
+            end if;  
 		end if;
 	end process syncProcess;
 
@@ -144,30 +141,6 @@ variable cur : u20 := counter;
 			
 	end case;
 	
- --  case nextState is
- --      when s0 =>
- --          num7seg(23 downto 16)<="11000000"; --0
- --          num7seg(15 downto 8) <="11000000"; --0
- --          num7seg(7 downto 0) <="11000000";  --0
- --      when s45 =>
- --          num7seg(23 downto 16)<="11000000"; --0
- --          num7seg(15 downto 8) <="10011001"; --4
- --          num7seg(7 downto 0) <="10010010";  --5
- --      when s90 =>
- --          num7seg(23 downto 16)<="11000000"; --0
- --          num7seg(15 downto 8) <="10010000"; --9
- --          num7seg(7 downto 0) <="11000000";  --0
- --      when s135 =>
- --          num7seg(23 downto 16)<="11111001"; --1
- --          num7seg(15 downto 8) <="10110000"; --3
- --          num7seg(7 downto 0) <="10010010";  --5
- --      when s180 =>
- --          num7seg(23 downto 16)<="11111001"; --1
- --          num7seg(15 downto 8) <="10000000"; --8
- --          num7seg(7 downto 0) <="11000000";  --0
- --      when others =>
- --          null;    
- --  end case;
 	end process combProcess;
 
 
