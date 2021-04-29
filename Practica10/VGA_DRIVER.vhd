@@ -145,17 +145,86 @@ end process;
 video_on_p: process(clk_out1,reset, column, row)
 begin
     if (reset='1') then
-        Video_on<='0';
+        Videoon<='0';
     elsif (rising_edge(clk_out1)) then
         if column <= "1001111101" and (row <= "0111011111") then
                         --637                    479
-            Video_ON<='1';
+            VideoON<='1';
         else 
-            Video_ON<='0';
+            VideoON<='0';
         end if;
     else null;
     end if;
 
 end process;
 
+draw: process (clk_out1, reset, column, row,videoon)
+    VARIABLE clk_count : INTEGER := 0;
+begin
+    if reset='1' then
+        R<="0000";
+        G<="0000";
+        B<="0000";
+    elsif (rising_edge(clk_out1)) then
+        if VideoOn='1' then
+            if(clk_count < 125000000) then --WAIT 5 seconds
+                if(column<10 or (column>314 and column<324) or column>629) then
+                    R<="1111";
+                    G<="0000";
+                    B<="0000";
+                elsif(row<10 or (column>234 and column<244) or column>469) then
+                    R<="1111";
+                    G<="0000";
+                    B<="0000";
+                 else
+                    R<="0000";
+                    G<="0000";
+                    B<="1111";
+                end if;
+                clk_count:=clk_count+1;
+           elsif (clk_count < 250000000) then
+                if(column<=79) then                      -- BLANCO
+                    R<="1111";
+                    G<="1111";
+                    B<="1111";
+                elsif (column>79 and column<=159) then   --AMARILLO
+                    R<="1111";
+                    G<="1111";
+                    B<="0000";
+                elsif (column>159 and column<=239) then   --CYAN
+                    R<="0000";
+                    G<="1111";
+                    B<="1111";
+                elsif (column>239 and column<=319) then   --VERDE
+                    R<="0000";
+                    G<="1111";
+                    B<="0000";
+                elsif (column>319 and column<=399) then   --MAGENTA
+                    R<="1111";
+                    G<="0000";
+                    B<="1111";
+                elsif (column>399 and column<=479) then   --ROJO
+                    R<="1111";
+                    G<="0000";
+                    B<="0000";
+                elsif (column>479 and column<=559) then   --AZUL
+                    R<="0000";
+                    G<="0000";
+                    B<="1111";
+                elsif (column>559 and column<=639) then   --NEGRO
+                    R<="0000";
+                    G<="0000";
+                    B<="0000";
+                else null;
+                end if;
+           else
+                clk_count:=0;
+           end if;
+        else null;
+        end if;
+    
+    end if;
+end process;
+
+video_on<=VideoOn;
 end Behavioral;
