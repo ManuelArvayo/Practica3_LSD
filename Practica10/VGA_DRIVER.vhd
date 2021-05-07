@@ -114,15 +114,29 @@ begin
     end if;
 end process;
 
+--H_Sync: process (clk_out1, reset, column)
+--begin
+--    if(reset='1') then
+--        HS<='0';
+--    elsif (rising_edge(clk_out1)) then
+--        if(column <= "1010001101" or column >= "1011101110") then
+--            HS<='1';
+--        else 
+--            HS<='0';
+--        end if;        
+--    else null;
+--    end if;
+--end process;
+
 H_Sync: process (clk_out1, reset, column)
 begin
     if(reset='1') then
         HS<='0';
     elsif (rising_edge(clk_out1)) then
-        if(column <= "1010001101" or column >= "1011101110") then
-            HS<='1';
-        else 
+        if(column >="1100000") then
             HS<='0';
+        else 
+            HS<='1';
         end if;        
     else null;
     end if;
@@ -168,11 +182,29 @@ begin
     elsif (rising_edge(clk_out1)) then
         if VideoOn='1' then
             if(clk_count < 125000000) then --WAIT 5 seconds
-                if(column<10 or (column>314 and column<324) or column>629) then
+                if(column<"0000001010") then
                     R<="1111";
                     G<="0000";
                     B<="0000";
-                elsif(row<10 or (column>234 and column<244) or column>469) then
+                    
+                elsif(column>"0100111010" and column<"0101000100") then
+                     R<="1111";
+                     G<="0000";
+                     B<="0000";
+                elsif(column>"1001110101") then
+                     R<="1111";
+                     G<="0000";
+                     B<="0000";
+                                                    
+                elsif(row<"0000001010") then
+                    R<="1111";
+                    G<="0000";
+                    B<="0000";
+                 elsif(row>"0011101010" and row<"0011110100") then
+                    R<="1111";
+                    G<="0000";
+                    B<="0000";
+                 elsif(row>"0111010101") then
                     R<="1111";
                     G<="0000";
                     B<="0000";
@@ -217,6 +249,7 @@ begin
                     B<="0000";
                 else null;
                 end if;
+                clk_count:=clk_count+1;
            else
                 clk_count:=0;
            end if;
