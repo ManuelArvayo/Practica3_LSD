@@ -78,7 +78,7 @@ JK: process(btn_on,btn_off,clk100m)
 		disp3_out_aux<='0';
 	end if;
 	
-	end process combProcess;
+	end process;
 		
 		
 tiempo_disp_on: process(clk1out, disp1_out,disp2_out,disp3_out)
