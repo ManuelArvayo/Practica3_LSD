@@ -3,125 +3,132 @@ use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 use IEEE.std_logic_unsigned.all;
 
-entity main_pwm is  
+entity sistema is  
 port (
     clk100m : in std_logic;
-    btn_in  : in std_logic;
-    pwm_out : out std_logic;
-    SEGM: out std_logic_vector (7 downto 0);
-    AN : out std_logic_vector (7 downto 0)
+    btn_on  : in std_logic;
+    btn_off : in std_logic;
+    switch: in std_logic_vector (2 downto 0);
+    modo    : in std_logic
+
 );
-end main_pwm;
+end sistema;
 
-architecture Behavioral of main_pwm is
+architecture Behavioral of sistema is
+	
 
-component sSegDisplay is
-    Port(ck : in  std_logic;                          -- 100MHz system clock
-			number : in  std_logic_vector (23 downto 0); -- eight digit number to be displayed
-			seg : out  std_logic_vector (7 downto 0);    -- display cathodes
-			an : out  std_logic_vector (7 downto 0));    -- display anodes (active-low, due to transistor complementing)
-end component;
-
-type stateType is (S0, S45, S90, S135, S180);
-	signal currentState, nextState : stateType;
-
-subtype u20 is unsigned(19 downto 0);
-signal counter      : u20 := x"00000";
-
-constant clk_freq   : integer := 100_000_000;       -- Clock frequency in Hz (10 ns)
-constant pwm_freq   : integer := 50;                -- PWM signal frequency in Hz (20 ms)
-constant period     : integer := clk_freq/pwm_freq; -- Clock cycle count per PWM period
-signal duty_cycle : integer := 50000;            -- Clock cycle count per PWM duty cycle
-
-signal pwm_counter  : std_logic := '0';
-signal stateHigh    : std_logic := '1';
-
-signal num7seg: std_logic_vector (23 downto 0);
+signal dispositivo_signal_select, rutina_select: std_logic_vector(2 downto 0); -- cuando signal select ='1' output=input del switch, cuando ='0' output=señal logica
+signal enable_general: std_logic;		-- cuando ='1' sistema activo, cuando ='0' sistema inactivo (focos apagados)
+signal disp1_out_aux,disp2_out_aux,disp3_out_aux: std_logic;
+signal cont_disp: std_logic_vector (1 downto 0);
+signal disp1_time_on,disp2_time_on,disp3_time_on: std_logic_vector (16 downto 0):"00000000000000000";
 
 begin
+	      
 
-s7D: sSegDisplay port map (ck => clk100m, number => num7seg, seg => SEGM, an => AN);
-
-
-syncProcess: process(btn_in, Clk100m)
-variable cur : u20 := counter;
+CONT_DISP<="01" WHEN switch="001" OR switch="010" OR switch="100" ELSE
+	   "10" WHEN switch="011" OR switch="101" OR switch="110" ELSE
+	   "11" WHEN switch="111" ELSE
+	   "00";
+	
+	
+JK: process(btn_on,btn_off,clk100m)
 	begin
-		if (rising_edge(Clk100m)) then
-			currentState <= nextState;
-			cur := cur + 1;  
-            counter <= cur;
-            if (cur <= duty_cycle) then
-                 pwm_counter <= '1'; 
-            elsif (cur > duty_cycle) then
-                 pwm_counter <= '0';
-            elsif (cur = period) then
-                 cur := x"00000";
-            end if;  
+		if rising_edge(clk100m) then
+			if(btn_on='1') then
+			   	enable_general='1';
+			elsif(btn_off='1') then
+				enable_general='1';
+			else null;
+			end if;
+		else null;
 		end if;
-	end process syncProcess;
+	end process;
+		
 
-	--Combinatorial process (State and output decode)
-	combProcess: process(currentState, btn_in)
 
+ process(enable_general)
 	begin
-	case currentState is
-		when S0 =>
-		    num7seg(23 downto 16)<="11000000"; --0
-            num7seg(15 downto 8) <="11000000"; --0
-            num7seg(7 downto 0) <="11000000";  --0
-			duty_cycle <= 50000;
-			if (btn_in = '1') then
-				nextState <= S45;
-			else
-				nextState <= S0;
-			end if;
-		when S45 =>
-		num7seg(23 downto 16)<="11000000"; --0
-        num7seg(15 downto 8) <="10011001"; --4
-        num7seg(7 downto 0) <="10010010";  --5
-		duty_cycle <= 100000;
-			if (btn_in = '1') then
-				nextState <= S90;
-			else
-				nextState <= S45;
-			end if;
-		when S90 =>
-		num7seg(23 downto 16)<="11000000"; --0
-        num7seg(15 downto 8) <="10010000"; --9
-        num7seg(7 downto 0) <="11000000";  --0
-		duty_cycle <= 150000;
-			if (btn_in = '1') then
-				nextState <= S135;
-			else
-				nextState <= S90;
-			end if;
-		when S135 =>
-		num7seg(23 downto 16)<="11111001"; --1
-        num7seg(15 downto 8) <="10110000"; --3
-        num7seg(7 downto 0) <="10010010";  --5
-		duty_cycle <= 200000;
-			if (btn_in = '1') then
-				nextState <= S180;
-			else
-				nextState <= S135;
-			end if;
-		when S180 =>
-		num7seg(23 downto 16)<="11111001"; --1
-        num7seg(15 downto 8) <="10000000"; --8
-        num7seg(7 downto 0) <="11000000";  --0
-		duty_cycle <= 250000;
-			if (btn_in = '1') then
-				nextState <= S0;
-	        else
-	            nextState <= S180;
-			end if;
-		when others =>
-			nextState <= S0;
+	if(enable_general='1') then
+		case modo is
+			when '1' =>				-- Manual
+				dispositivo_signal_select<="111";  				
+			when '0' =>   -- Automatico
+				dispositivo_signal_select<="000";
+				case rutina_select is
+					when "001" =>
+						
+					when"010"  =>
+					
+					when "011" =>
+					
+					when "100" =>
+					
+					when "101" =>
+					
+					when others => null;
+				end case;
+	
 			
-	end case;
+		end case;
+	else 
+		dispositivo_signal_select<="000";
+		disp1_out_aux<='0';
+		disp2_out_aux<='0';
+		disp3_out_aux<='0';
+	end if;
 	
 	end process combProcess;
+		
+		
+tiempo_disp_on: process(clk1out, disp1_out,disp2_out,disp3_out)
+	begin
+		if rising_edge (clk1out) then
+			if(disp1_out='1') then
+				disp1_time_on<= disp1_time_on + '1';
+			else
+				disp1_time_on<= "00000000000000000";
+			end if;
+				
+			if(disp2_out='1') then
+				disp2_time_on<= disp2_time_on + '1';
+			else
+				disp2_time_on<= "00000000000000000";
+			end if;
+				
+			if(disp3_out='1') then
+				disp3_time_on<= disp3_time_on + '1';
+			else
+				disp3_time_on<= "00000000000000000";
+			end if;
+				
+				
+		else null;
+		end if;
+	end process;
 
-
-pwm_out <= pwm_counter;
+signal_select: process(dispositivo_signal_select)
+	begin
+		if dispositivo_signal_select(0) ='1' then
+			disp1_out <= switch(0);
+		elsif dispositivo_signal_select(0) = '0' then
+			disp1_out <= disp1_out_aux;
+		else null;
+		end if;
+			
+		if dispositivo_signal_select(1) ='1' then
+			disp2_out <= switch(1);
+		elsif dispositivo_signal_select(1) = '0' then
+			disp2_out <= disp2_out_aux;
+		else null;
+		end if;
+			
+		if dispositivo_signal_select(2) ='1' then
+			disp3_out <= switch(2);
+		elsif dispositivo_signal_select(2) = '0' then
+			disp3_out <= disp3_out_aux;
+		else null;
+		end if;
+	end process;
+		
 end Behavioral;
