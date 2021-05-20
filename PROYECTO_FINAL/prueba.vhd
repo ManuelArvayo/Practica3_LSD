@@ -21,7 +21,7 @@ signal dispositivo_signal_select, rutina_select: std_logic_vector(2 downto 0); -
 signal enable_general: std_logic;		-- cuando ='1' sistema activo, cuando ='0' sistema inactivo (focos apagados)
 signal disp1_out_aux,disp2_out_aux,disp3_out_aux: std_logic;
 signal cont_disp: std_logic_vector (1 downto 0);
-signal disp1_time_on,disp2_time_on,disp3_time_on: std_logic_vector (16 downto 0):"00000000000000000";
+signal disp1_time_on,disp2_time_on,disp3_time_on: std_logic_vector (5 downto 0):"000000"; -- cada 30 minutos es 1 unidad (se necesitan 48 [110000] para hacer un dia)
 
 begin
 	      
@@ -38,7 +38,7 @@ JK: process(btn_on,btn_off,clk100m)
 			if(btn_on='1') then
 			   	enable_general='1';
 			elsif(btn_off='1') then
-				enable_general='1';
+				enable_general='0';
 			else null;
 			end if;
 		else null;
@@ -87,25 +87,39 @@ tiempo_disp_on: process(clk1out, disp1_out,disp2_out,disp3_out)
 			if(disp1_out='1') then
 				disp1_time_on<= disp1_time_on + '1';
 			else
-				disp1_time_on<= "00000000000000000";
+				disp1_time_on<= "000000";
 			end if;
 				
 			if(disp2_out='1') then
 				disp2_time_on<= disp2_time_on + '1';
 			else
-				disp2_time_on<= "00000000000000000";
+				disp2_time_on<= "000000";
 			end if;
 				
 			if(disp3_out='1') then
 				disp3_time_on<= disp3_time_on + '1';
 			else
-				disp3_time_on<= "00000000000000000";
+				disp3_time_on<= "000000";
 			end if;
 				
 				
 		else null;
 		end if;
 	end process;
+			
+tiempo_total<= disp1_time_on + disp2_time_on + disp3_time_on;	
+				
+consumo: process(tiempo_total)
+begin
+	if(tiempo_total>x) then
+		nivel_consumo<="01"; --Bajo
+	elsif (tiempo_total>x) then
+		nivel_consumo<="10";
+	elsif (tiempo_total>x) then
+		nivel_consumo<="11";
+	else nul;
+	end if;
+end process;
 
 signal_select: process(dispositivo_signal_select)
 	begin
@@ -130,5 +144,8 @@ signal_select: process(dispositivo_signal_select)
 		else null;
 		end if;
 	end process;
-		
+	
+			
+	
+			
 end Behavioral;
