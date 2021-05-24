@@ -9,20 +9,46 @@ port (
     btn_on  : in std_logic;
     btn_off : in std_logic;
     switch: in std_logic_vector (2 downto 0);
-    modo    : in std_logic
+    modo    : in std_logic;
+    f1_out, f2_out, f3_out: out std_logic
 
 );
 end sistema;
 
 architecture Behavioral of sistema is
 	
-
-signal dispositivo_signal_select, rutina_select: std_logic_vector(2 downto 0); -- cuando signal select ='1' output=input del switch, cuando ='0' output=señal logica
+signal dispositivo_signal_select: std_logic_vector(2 downto 0); -- cuando signal select ='1' output=input del switch, cuando ='0' output=señal logica
 signal enable_general: std_logic;		-- cuando ='1' sistema activo, cuando ='0' sistema inactivo (focos apagados)
 signal disp1_out_aux,disp2_out_aux,disp3_out_aux: std_logic;
-signal cont_disp: std_logic_vector (1 downto 0);
-signal disp1_time_on,disp2_time_on,disp3_time_on: std_logic_vector (5 downto 0):"000000"; -- cada 30 minutos es 1 unidad (se necesitan 48 [110000] para hacer un dia)
+signal cont_disp, nivel_consumo: std_logic_vector (1 downto 0):="00";
+signal disp1_time_on,disp2_time_on,disp3_time_on, tiempo_total: std_logic_vector (5 downto 0):"000000"; -- cada 30 minutos es 1 unidad (se necesitan 48 [110000] para hacer un dia)
+signal rutina_select: std_logic_vector(2 downto 0):="001";
+signal f1_intensity, f2_intensity, f3_intensity: std_logic_vector(2 downto 0):="000";
 
+
+signal dia_noche:std_logic:="0"; -- dia=1 ; noche = 0
+
+component dimmer is
+    port( 
+      state: in std_logic_vector (2 downto 0);
+      signal_out: out std_logic
+    );
+end component;
+
+component JK is
+port(
+  J,K,CLK: in std_logic;
+  Q: out std_logic
+  );
+end component;
+
+component tempo_disp_on is
+  port(
+      CLK, d1,d2,d3: in std_logic;
+      timer1,timer2, timer3: out std_logic_vector(5 downto 0)
+    );
+end component;	
+	
 begin
 	      
 
@@ -31,22 +57,15 @@ CONT_DISP<="01" WHEN switch="001" OR switch="010" OR switch="100" ELSE
 	   "11" WHEN switch="111" ELSE
 	   "00";
 	
+d1: dimmer port map (state=>f1_intensity, signal_out=>disp1_out_aux);		
+d2: dimmer port map (state=>f2_intensity, signal_out=>disp1_out_aux);		
+d3: dimmer port map (state=>f3_intensity, signal_out=>disp1_out_aux);
+		   
+JK1:JK port map (btn_on,btn_off,clk100m, enable_general);
+
+tiempo_disp_on: tempo_disp_on port map(clk1out, disp1_out,disp2_out,disp3_out,disp1_time_on,disp2_time_on,disp3_time_on);			
+tiempo_total<= disp1_time_on + disp2_time_on + disp3_time_on;		
 	
-JK: process(btn_on,btn_off,clk100m)
-	begin
-		if rising_edge(clk100m) then
-			if(btn_on='1') then
-			   	enable_general='1';
-			elsif(btn_off='1') then
-				enable_general='0';
-			else null;
-			end if;
-		else null;
-		end if;
-	end process;
-		
-
-
  process(enable_general)
 	begin
 	if(enable_general='1') then
@@ -57,15 +76,35 @@ JK: process(btn_on,btn_off,clk100m)
 				dispositivo_signal_select<="000";
 				case rutina_select is
 					when "001" =>
-						
+						if (nivel_consumo="01") then --nivel bajo de consumo: encender foco 1 y habilitar encendido de los demas
+							f1_intensity<="100";
+							dispositivo_signal_select<="110";
+						else
+							rutina_select<="010";
+						end if;
 					when"010"  =>
-					
+						if(nivel_consumo="10") then -- nivel medio de consumo: reducir intensidad del foco con mas tiempo encendido a la mitad.
+							if ((disp1_time_on > disp2_time_on) and (disp1_time_on> disp3_time_on)) then -- disp1_timer > disp2_timer > disp3_timer
+								f1_intensity<="010";						
+							elsif ((disp2_time_on > disp1_time_on) and (disp2_time_on> disp3_time_on)) then -- disp2_timer > disp1_timer > disp3_timer
+								f2_intensity<="010";
+							elsif ((disp3_time_on > disp1_time_on) and (disp3_time_on> disp2_time_on)) then -- disp3_timer > disp1_timer > disp2_timer
+								f3_intensity<="010";
+							else null;
+							end if;
+						else
+							rutina_select<="011";
+						end if;
 					when "011" =>
-					
-					when "100" =>
-					
-					when "101" =>
-					
+						if (nivel_consumo="11") then -- nivel alto de consumo: apagar todos los focos y deshabilitarlos, encender buzzer
+							d: dimmer port map (state=>"000", signal_out=>disp1_out_aux);
+							d: dimmer port map (state=>"000", signal_out=>disp2_out_aux);
+							d: dimmer port map (state=>"000", signal_out=>disp3_out_aux);
+							dispositivo_signal_select<="000";
+							buzzer<='1';
+						else
+							null;
+						end if;
 					when others => null;
 				end case;
 	
@@ -79,44 +118,16 @@ JK: process(btn_on,btn_off,clk100m)
 	end if;
 	
 	end process;
-		
-		
-tiempo_disp_on: process(clk1out, disp1_out,disp2_out,disp3_out)
-	begin
-		if rising_edge (clk1out) then
-			if(disp1_out='1') then
-				disp1_time_on<= disp1_time_on + '1';
-			else
-				disp1_time_on<= "000000";
-			end if;
-				
-			if(disp2_out='1') then
-				disp2_time_on<= disp2_time_on + '1';
-			else
-				disp2_time_on<= "000000";
-			end if;
-				
-			if(disp3_out='1') then
-				disp3_time_on<= disp3_time_on + '1';
-			else
-				disp3_time_on<= "000000";
-			end if;
-				
-				
-		else null;
-		end if;
-	end process;
-			
-tiempo_total<= disp1_time_on + disp2_time_on + disp3_time_on;	
+
 				
 consumo: process(tiempo_total)
 begin
 	if(tiempo_total>x) then
 		nivel_consumo<="01"; --Bajo
 	elsif (tiempo_total>x) then
-		nivel_consumo<="10";
+		nivel_consumo<="10"; --Medio
 	elsif (tiempo_total>x) then
-		nivel_consumo<="11";
+		nivel_consumo<="11"; --Alto
 	else nul;
 	end if;
 end process;
@@ -145,6 +156,7 @@ signal_select: process(dispositivo_signal_select)
 		end if;
 	end process;
 	
+
 			
 	
 			
