@@ -21,7 +21,7 @@ signal dispositivo_signal_select: std_logic_vector(2 downto 0); -- cuando signal
 signal enable_general: std_logic;		-- cuando ='1' sistema activo, cuando ='0' sistema inactivo (focos apagados)
 signal disp1_out_aux,disp2_out_aux,disp3_out_aux: std_logic;
 signal cont_disp, nivel_consumo: std_logic_vector (1 downto 0):="00";
-signal disp1_time_on,disp2_time_on,disp3_time_on, tiempo_total: std_logic_vector (5 downto 0):"000000"; -- cada 30 minutos es 1 unidad (se necesitan 48 [110000] para hacer un dia)
+signal disp1_time_on,disp2_time_on,disp3_time_on, tiempo_total: std_logic_vector (4 downto 0):"00000"; -- cada 30 minutos es 1 unidad (se necesitan 48 [110000] para hacer un dia)
 signal rutina_select: std_logic_vector(2 downto 0):="001";
 signal f1_intensity, f2_intensity, f3_intensity: std_logic_vector(2 downto 0):="000";
 
@@ -97,9 +97,9 @@ tiempo_total<= disp1_time_on + disp2_time_on + disp3_time_on;
 						end if;
 					when "011" =>
 						if (nivel_consumo="11") then -- nivel alto de consumo: apagar todos los focos y deshabilitarlos, encender buzzer
-							d: dimmer port map (state=>"000", signal_out=>disp1_out_aux);
-							d: dimmer port map (state=>"000", signal_out=>disp2_out_aux);
-							d: dimmer port map (state=>"000", signal_out=>disp3_out_aux);
+							f1_intensity<="000";
+							f2_intensity<="000";
+							f3_intensity<="000";
 							dispositivo_signal_select<="000";
 							buzzer<='1';
 						else
@@ -122,11 +122,11 @@ tiempo_total<= disp1_time_on + disp2_time_on + disp3_time_on;
 				
 consumo: process(tiempo_total)
 begin
-	if(tiempo_total>x) then
+	if(tiempo_total<"00101") then  -- 5 hrs
 		nivel_consumo<="01"; --Bajo
-	elsif (tiempo_total>x) then
+	elsif (tiempo_total>"00101" and (tiempo_total>"01010")) then -- entre 5 y 10 hrs
 		nivel_consumo<="10"; --Medio
-	elsif (tiempo_total>x) then
+	elsif (tiempo_total>"01010") then  -- mayor a 10 hrs
 		nivel_consumo<="11"; --Alto
 	else nul;
 	end if;
