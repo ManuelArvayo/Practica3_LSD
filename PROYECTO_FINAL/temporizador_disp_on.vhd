@@ -26,7 +26,7 @@ entity tempo_disp_on is
 				  t1<= "000000";
 			  end if;
 			  
-        if(d2='1') then
+      			  if(d2='1') then
 				  t2<= t2 + '1';
 			  else
 				    t2<= "000000";
