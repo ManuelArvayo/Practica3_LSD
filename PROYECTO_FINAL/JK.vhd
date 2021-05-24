@@ -6,7 +6,7 @@ port(
   J,K,CLK: in std_logic;
   Q: out std_logic
   );
-  
+end JK;
 architecture behavioral of JK is
 
 begin
