@@ -26,14 +26,14 @@ use IEEE.std_logic_unsigned.all;
 entity tempo_disp_on is
   port(
       CLK, d1,d2,d3: in std_logic;
-      timer1,timer2, timer3: out std_logic_vector(5 downto 0)
+      timer1,timer2, timer3: out std_logic_vector(4 downto 0)
     );
   end tempo_disp_on;
   
   
  architecture behavioral of tempo_disp_on is
    
-   signal t1,t2,t3: std_logic_vector(5 downto 0);
+   signal t1,t2,t3: std_logic_vector(4 downto 0);
    
    begin
      
@@ -43,19 +43,19 @@ entity tempo_disp_on is
 			  if(d1='1') then
 				   t1<= t1 + '1';
 			  else
-				  t1<= "000000";
+				  t1<= "00000";
 			  end if;
 			  
       			  if(d2='1') then
 				  t2<= t2 + '1';
 			  else
-				    t2<= "000000";
+				    t2<= "00000";
 			  end if;
 				
 			  if(d3='1') then
 				  t3<= t3 + '1';
 			  else
-				  t3<= "000000";
+				  t3<= "00000";
 			  end if;
 								
 		else null;

@@ -50,6 +50,7 @@ signal clk_out1, reset,locked: std_logic;
 
 component dimmer is
     port( 
+      Clk100m: in std_logic;
       state: in std_logic_vector (2 downto 0);
       signal_out: out std_logic
     );
@@ -65,14 +66,14 @@ end component;
 component tempo_disp_on is
   port(
       CLK, d1,d2,d3: in std_logic;
-      timer1,timer2, timer3: out std_logic_vector(5 downto 0)
+      timer1,timer2, timer3: out std_logic_vector(4 downto 0)
     );
 end component;	
 	
 component signal_selector is
   Port (
             s_in, switch: in std_logic_vector (2 downto 0);
-            s_secundaria1,s_secundaria2, s_secundaria3: in std_logic; 
+            clk,s_secundaria1,s_secundaria2, s_secundaria3: in std_logic; 
             d1,d2,d3: out std_logic
      );
 end component;
@@ -97,9 +98,9 @@ CONT_DISP<="01" WHEN switch="001" OR switch="010" OR switch="100" ELSE
 	   "11" WHEN switch="111" ELSE
 	   "00";
 	
-d1: dimmer port map (state=>f1_intensity, signal_out=>disp1_out_aux);		
-d2: dimmer port map (state=>f2_intensity, signal_out=>disp1_out_aux);		
-d3: dimmer port map (state=>f3_intensity, signal_out=>disp1_out_aux);
+d1: dimmer port map (Clk100m=>clk100m,state=>f1_intensity, signal_out=>disp1_out_aux);		
+d2: dimmer port map (Clk100m=>clk100m,state=>f2_intensity, signal_out=>disp2_out_aux);		
+d3: dimmer port map (Clk100m=>clk100m,state=>f3_intensity, signal_out=>disp3_out_aux);
 		   
 JK1:JK port map 
     (  J=> btn_on,
@@ -117,7 +118,7 @@ divisorFrecuencia : clk_wiz_0
 
 
 tiempo_disp_on: tempo_disp_on port map
-    (CLK=>clk_out1,
+    (CLK=>Clk100m,
      d1=>disp1_out,
      d2=>disp2_out,
      d3=>disp3_out,
@@ -127,7 +128,7 @@ tiempo_disp_on: tempo_disp_on port map
      );			
 tiempo_total<= disp1_time_on + disp2_time_on + disp3_time_on;		
 	
- process(enable_general)
+ process(enable_general,modo,rutina_select)
 	begin
 	if(enable_general='1') then
 		case modo is
@@ -169,7 +170,7 @@ tiempo_total<= disp1_time_on + disp2_time_on + disp3_time_on;
 					when others => null;
 				end case;
 	
-			
+	   when others=>null;		
 		end case;
 	else 
 		dispositivo_signal_select<="000";
@@ -196,6 +197,7 @@ end process;
 signal_select: signal_selector port map 
     (   s_in=>dispositivo_signal_select, 
         switch=>switch,
+        clk=>clk100m,
         s_secundaria1=>disp1_out_aux,
         s_secundaria2=>disp2_out_aux,
         s_secundaria3=>disp3_out_aux, 

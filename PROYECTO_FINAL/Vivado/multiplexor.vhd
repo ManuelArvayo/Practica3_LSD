@@ -34,7 +34,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 entity signal_selector is
   Port (
             s_in, switch: in std_logic_vector (2 downto 0);
-            s_secundaria1,s_secundaria2, s_secundaria3: in std_logic; 
+            clk,s_secundaria1,s_secundaria2, s_secundaria3: in std_logic; 
             d1,d2,d3: out std_logic
      );
 end signal_selector;
@@ -43,8 +43,9 @@ architecture Behavioral of signal_selector is
 
 begin
 
-signal_select: process(s_in)
+signal_select: process(clk,s_in)
 	begin
+	   if rising_edge(clk) then
 		if s_in(0) ='1' then
 			d1 <= switch(0);
 		elsif s_in(0) = '0' then
@@ -65,6 +66,8 @@ signal_select: process(s_in)
 			d3 <= s_secundaria3;
 		else null;
 		end if;
+	   else null;
+	   end if;
 	end process;
 	
 

@@ -38,7 +38,7 @@ use IEEE.std_logic_unsigned.all;
 
 entity dimmer is
     port(
-      clk100m: in std_logic;
+      Clk100m: in std_logic;
       state: in std_logic_vector (2 downto 0);
       signal_out: out std_logic
     );
