@@ -22,6 +22,15 @@ ARCHITECTURE behavior OF lcd_example IS
        rw, rs, e  : OUT STD_LOGIC; --read/write, setup/data, and enable for lcd
        lcd_data   : OUT STD_LOGIC_VECTOR(7 DOWNTO 0)); --data signals for lcd
   END COMPONENT;
+
+component sistema_rom is  
+port (
+      address: in std_logic_vector(5 downto 0);
+      lcd_data: out std_logic_vector (7 downto 0)
+);
+end component;
+    
+signal add: std_logic_vector (5 downto 0);
 BEGIN
 
   --instantiate the lcd controller
@@ -29,36 +38,107 @@ BEGIN
     PORT MAP(clk => clk, reset_n => '1', lcd_enable => lcd_enable, lcd_bus => lcd_bus, 
              busy => lcd_busy, rw => rw, rs => rs, e => e, lcd_data => lcd_data);
   
+    
+lcd_out: sistema_rom port map (address=>add, lcd_data=>lcd_data);
   PROCESS(clk)
     VARIABLE char  :  INTEGER:= 0;
   BEGIN
-    IF(clk'EVENT AND clk = '1') THEN
-      IF(lcd_busy = '0' AND lcd_enable = '0') THEN
-        lcd_enable <= '1';
-        IF(char < 15) THEN
-          char := char + 1;
-        END IF;
-        CASE char IS
-          WHEN 1 => lcd_bus <= "1001001101"; -- M
-          WHEN 2 => lcd_bus <= "1001100001"; -- a
-          WHEN 3 => lcd_bus <= "1001101110"; -- n
-          WHEN 4 => lcd_bus <= "1001110101"; -- u
-          WHEN 5 => lcd_bus <= "1001100101"; -- e
-          WHEN 6 => lcd_bus <= "1001101100"; -- l
-          WHEN 7 => lcd_bus <= "0011000000"; -- salto de linea
-          WHEN 8 => lcd_bus <= "1001001010";  -- J
-          WHEN 9 => lcd_bus <= "1001100101";  -- e
-          WHEN 10 => lcd_bus<= "1001110011";  -- s
-          WHEN 11 => lcd_bus <= "1001110011"; -- s
-          WHEN 12 => lcd_bus <= "1001101001"; -- i
-          WHEN 13 => lcd_bus <= "1001100011"; -- c
-          WHEN 14 => lcd_bus <= "1001100001";  -- a
-          WHEN OTHERS => lcd_enable <= '0';
-        END CASE;
-      ELSE
-        lcd_enable <= '0';
-      END IF;
-    END IF;
-  END PROCESS;
+      IF(rising_edge(clk)) THEN
   
+          IF(clk_count < (5000000 * freq)) THEN    -- 5s cycle
+            --LINE 1: MODO: MAN/AUT
+            --LINE 2: DIA/NOCHE
+              add<="01001101";--M
+              add<="01001111"; --O
+              add<="01000100"; --D
+              add<="01001111"; --O
+              add<="00111010"; --:
+              if (modo ='1') then
+                add<="01000001"; --A
+                add<="01010101"; --U
+                add<="01010100"; --T
+              elsif(modo='0') then
+                add<="01001101";--M
+                add<="01000001"; --A
+                add<="01001110"; --N
+              end if;
+              WHEN 7 => add <= "100101"; -- salto de linea
+              if(Dia_Noche = '0') then
+              add<="01000100"; --D
+              add<="01001001"; --I    
+              add<="01000001"; --A
+              elsif(Dia_Noche='1') then
+              add<="01001110"; --N
+              add<="01001111"; --O
+              add<="01000011"; --C  
+              add<="01001000"; --H  
+              add<="01000101"; --E
+              end if;
+          ELSIF(clk_count < (10000000 * freq)) THEN
+            --LINE 1: # DE FOCOS: 
+            --LINE 2: TIME F1:
+            
+              add<="";--#
+              add<="";--
+              add<="";--D
+              add<="";--E
+              add<="";--
+              add<="";--F
+              add<="";--O
+              add<="";--C
+              add<="";--O
+              add<="";--S
+              add<="";--:
+              WHEN 7 => add <= "100101"; -- salto de linea
+              add<="";--T
+              add<="";--I
+              add<="";--M
+              add<="";--E
+              add<="";--
+              add<="";--F
+              add<="";--1
+              add<="";--:
+            
+          ELSIF(clk_count < (15000000 * freq)) THEN
+            --LINE 1: TIME F2: 
+            --LINE 2: TIME F3:
+              add<="";--T
+              add<="";--I
+              add<="";--M
+              add<="";--E
+              add<="";--
+              add<="";--F
+              add<="";--2
+              add<="";--:
+              WHEN 7 => add <= "100101"; -- salto de linea
+              add<="";--T
+              add<="";--I
+              add<="";--M
+              add<="";--E
+              add<="";--
+              add<="";--F
+              add<="";--3
+              add<="";--:
+          ELSIF(clk_count < (20000000 * freq)) THEN
+            --LINE 1: NIVEL: ALTO/MEDIO/BAJO
+            --LINE 2: GASTO APROX: $
+              add<="";--N
+              add<="";--I
+              add<="";--V
+              add<="";--E
+              add<="";--L
+              add<="";--:
+              WHEN 7 => add <= "100101"; -- salto de linea
+              add<="";--G
+              add<="";--T
+              add<="";--O
+              add<="";--
+              add<="";--A
+              add<="";--P
+              add<="";--R
+              add<="";--O
+              add<="";--X
+              add<="";--:
+
+  END PROCESS;  
 END behavior;
